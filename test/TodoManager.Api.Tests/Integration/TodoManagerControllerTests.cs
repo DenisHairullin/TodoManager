@@ -77,6 +77,65 @@ public class TodoManagerControllerTest
     }
 
     [Test]
+    public async Task AddTaskShouldReturnTaskWithValidTags()
+    {
+        // Arrange
+        var client = new TodoManagerApplicationFactory().CreateClient();
+        var task = new TodoTaskDto
+        {
+            Name = "New Task 1",
+            Description = "New Description 1",
+            TagNames = { "Tag 1", "Tag 2" }
+        };
+
+        // Act
+        var response = await client.PostAsync(
+            "https://localhost/TodoManager/Tasks", 
+            JsonContent.Create(task));
+
+        var data = await response.Content.ReadFromJsonAsync<TodoTaskDto>();
+
+        // Assert
+        Assert.That(data?.TagNames.SequenceEqual(new[] { "Tag 1", "Tag 2" }), 
+            Is.True);
+    }
+
+    [Test]
+    public async Task AddTaskShouldReturnTaskWithValidLevels()
+    {
+        // Arrange
+        var client = new TodoManagerApplicationFactory().CreateClient();
+        var task = new TodoTaskDto
+        {
+            Name = "New Task 1",
+            Description = "New Description 1",
+            SubTasks = 
+            {
+                new TodoTaskDto
+                {
+                    Name = "New Task 2",
+                    Description = "New Description 2"
+                }
+            }
+        };
+
+        // Act
+        var response = await client.PostAsync(
+            "https://localhost/TodoManager/Tasks", 
+            JsonContent.Create(task));
+
+        var data = await response.Content.ReadFromJsonAsync<TodoTaskDto>();
+
+        // Assert
+        Assert.That(data, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(data?.Level, Is.Zero);
+            Assert.That(data?.SubTasks.FirstOrDefault()?.Level, Is.EqualTo(1));
+        });
+    }    
+
+    [Test]
     public async Task AddTaskWithNullNameShouldBadRequest()
     {
         // Arrange
@@ -202,6 +261,29 @@ public class TodoManagerControllerTest
     }
 
     [Test]
+    public async Task AddSubTaskShouldReturnTaskWithValidLevels()
+    {
+        // Arrange
+        var client = new TodoManagerApplicationFactory().CreateClient();
+        var task = new TodoTaskDto
+        {
+            Name = "New Task 1",
+            Description = "New Description 1"
+        };
+
+        // Act
+        var response = await client.PostAsync(
+            "https://localhost/TodoManager/Tasks/1/Subtasks", 
+            JsonContent.Create(task));
+
+        var data = await response.Content.ReadFromJsonAsync<TodoTaskDto>();
+
+        // Assert
+        Assert.That(data, Is.Not.Null);
+        Assert.That(data?.Level, Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task AddSubTaskForAbsentTaskShouldNotFound()
     {
         // Arrange
@@ -219,6 +301,26 @@ public class TodoManagerControllerTest
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task AddSubTaskWithAllowedDepthShouldCreated()
+    {
+        // Arrange
+        var client = new TodoManagerApplicationFactory().CreateClient();
+        var task = new TodoTaskDto
+        {
+            Name = "New Task 1",
+            Description = "New Description 1"
+        };
+
+        // Act
+        var response = await client.PostAsync(
+            "https://localhost/TodoManager/Tasks/1/Subtasks", 
+            JsonContent.Create(task));
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
     }
 
     [Test]
