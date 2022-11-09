@@ -6,11 +6,18 @@ namespace TodoManager.Api.Tests.Integration;
 [Parallelizable(ParallelScope.Children)]
 public class TodoManagerControllerTest
 {
+    private readonly TodoManagerApplicationFactory _applicationFactory;
+
+    public TodoManagerControllerTest()
+    {
+        _applicationFactory = new TodoManagerApplicationFactory();
+    }
+
     [Test]
     public async Task GetAllTasksShouldOk()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
 
         // Act
         var response = await client.GetAsync(
@@ -28,7 +35,7 @@ public class TodoManagerControllerTest
     public async Task GetTaskByIdShouldOk()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
 
         // Act
         var response = await client.GetAsync(
@@ -45,7 +52,7 @@ public class TodoManagerControllerTest
     public async Task GetTaskByIdOfAbsentTaskShouldNotFound()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
 
         // Act
         var response = await client.GetAsync(
@@ -59,7 +66,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskShouldCreated()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -80,7 +87,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskShouldReturnTaskWithValidTags()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -104,7 +111,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskShouldReturnTaskWithValidLevels()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -139,7 +146,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskWithNullNameShouldBadRequest()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = null!,
@@ -159,7 +166,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskWithAbsentTagShouldBadRequest()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Name 1",
@@ -180,7 +187,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskWithAllowedDepthShouldCreated()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -208,7 +215,7 @@ public class TodoManagerControllerTest
     public async Task AddTaskWithNotAllowedDepthShouldBadRequest()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -244,7 +251,7 @@ public class TodoManagerControllerTest
     public async Task AddSubTaskShouldCreated()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -264,7 +271,7 @@ public class TodoManagerControllerTest
     public async Task AddSubTaskShouldReturnTaskWithValidLevels()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -287,7 +294,7 @@ public class TodoManagerControllerTest
     public async Task AddSubTaskForAbsentTaskShouldNotFound()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -307,7 +314,7 @@ public class TodoManagerControllerTest
     public async Task AddSubTaskWithAllowedDepthShouldCreated()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -327,7 +334,7 @@ public class TodoManagerControllerTest
     public async Task AddSubTaskWithNotAllowedDepthShouldBadRequest()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var task = new TodoTaskDto
         {
             Name = "New Task 1",
@@ -355,7 +362,7 @@ public class TodoManagerControllerTest
     public async Task DeleteTaskShouldOk()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
 
         // Act
         var response = await client.DeleteAsync(
@@ -369,7 +376,7 @@ public class TodoManagerControllerTest
     public async Task DeleteAbsentTaskShouldNotFound()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
 
         // Act
         var response = await client.DeleteAsync(
@@ -383,7 +390,7 @@ public class TodoManagerControllerTest
     public async Task GetAllTagsShouldOk()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
 
         // Act
         var response = await client.GetAsync(
@@ -401,7 +408,7 @@ public class TodoManagerControllerTest
     public async Task AddTagShouldOk()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var tag = new TodoTagDto
         {
             Name = "New Tag 1"
@@ -420,7 +427,7 @@ public class TodoManagerControllerTest
     public async Task AddTagWithNullNameShouldBadRequest()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var tag = new TodoTagDto
         {
             Name = null!
@@ -439,7 +446,7 @@ public class TodoManagerControllerTest
     public async Task AddExistsTagShouldConflict()
     {
         // Arrange
-        var client = new TodoManagerApplicationFactory().CreateClient();
+        var client = _applicationFactory.CreateClient();
         var tag = new TodoTagDto
         {
             Name = "Tag 1"

@@ -12,46 +12,15 @@ namespace TodoManager.Api.Tests;
 
 public class TodoManagerApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly List<TodoTask> _tasks;
-    private readonly List<TodoTag> _tags;
-
-    public TodoManagerApplicationFactory()
-    {
-        _tasks = GetSeedingTasks();
-        _tags = GetSeedingTags();
-    }
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var taskRepositoryMock = A.Fake<ITaskRepository>();
-        var tagRepositoryMock = A.Fake<ITagRepository>();
-        var unitOfWorkMock = A.Fake<IUnitOfWork>();
-
-        A.CallTo(() => taskRepositoryMock.GetAllAsync()).Returns(_tasks);
-        A.CallTo(() => taskRepositoryMock.GetByIdAsync(A<int>.Ignored))
-            .ReturnsLazily((int x) => _tasks.SingleOrDefault(y => y.Id == x));
-
-        A.CallTo(() => tagRepositoryMock.GetAllAsync()).Returns(_tags);
-        A.CallTo(() => tagRepositoryMock.GetByConditionAsync(
-            A<Expression<Func<TodoTag, bool>>>.Ignored))
-                .ReturnsLazily((Expression<Func<TodoTag, bool>> x) => 
-                    _tags.Where(x.Compile()).ToList());
-        A.CallTo(() => tagRepositoryMock.GetByNameAsync(A<string>.Ignored))
-            .ReturnsLazily((string x) => _tags.SingleOrDefault(
-                y => y.Name == x));
-
-        A.CallTo(() => unitOfWorkMock.Tasks).Returns(taskRepositoryMock);
-        A.CallTo(() => unitOfWorkMock.Tags).Returns(tagRepositoryMock);
-
         builder
             .ConfigureTestServices(s => s
             .RemoveAll<ApplicationContext>()
+            .RemoveAll<ITagRepository>()
+            .RemoveAll<ITaskRepository>()
             .Replace(ServiceDescriptor.Scoped(typeof(IUnitOfWork),
-                _ => unitOfWorkMock))
-            .Replace(ServiceDescriptor.Scoped(typeof(ITaskRepository),
-                _ => taskRepositoryMock))
-            .Replace(ServiceDescriptor.Scoped(typeof(ITagRepository),
-                _ => tagRepositoryMock))
+                _ => GetUnitOfWork()))
             .Configure<TodoServiceOptions>(new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
@@ -60,6 +29,34 @@ public class TodoManagerApplicationFactory : WebApplicationFactory<Program>
                 .Build()
             )
         );
+    }
+
+    private static IUnitOfWork GetUnitOfWork()
+    {
+        var tasks = GetSeedingTasks();
+        var tags = GetSeedingTags();
+
+        var taskRepositoryMock = A.Fake<ITaskRepository>();
+        var tagRepositoryMock = A.Fake<ITagRepository>();
+        var unitOfWorkMock = A.Fake<IUnitOfWork>();
+
+        A.CallTo(() => taskRepositoryMock.GetAllAsync()).Returns(tasks);
+        A.CallTo(() => taskRepositoryMock.GetByIdAsync(A<int>.Ignored))
+            .ReturnsLazily((int x) => tasks.SingleOrDefault(y => y.Id == x));
+
+        A.CallTo(() => tagRepositoryMock.GetAllAsync()).Returns(tags);
+        A.CallTo(() => tagRepositoryMock.GetByConditionAsync(
+            A<Expression<Func<TodoTag, bool>>>.Ignored))
+                .ReturnsLazily((Expression<Func<TodoTag, bool>> x) => 
+                    tags.Where(x.Compile()).ToList());
+        A.CallTo(() => tagRepositoryMock.GetByNameAsync(A<string>.Ignored))
+            .ReturnsLazily((string x) => tags.SingleOrDefault(
+                y => y.Name == x));
+
+        A.CallTo(() => unitOfWorkMock.Tasks).Returns(taskRepositoryMock);
+        A.CallTo(() => unitOfWorkMock.Tags).Returns(tagRepositoryMock);
+
+        return unitOfWorkMock;
     }
 
     private static List<TodoTask> GetSeedingTasks()
